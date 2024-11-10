@@ -7,8 +7,6 @@ from gtts import gTTS
 
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-#AIzaSyA72daNDZVBAfKh3ulGZbUI9gKfy_J1B8c
-
 
 generation_config = {
     "temperature": 0.2, #HIGHER TEMP. MORE RANDOM OUTPUT(control randomness)
