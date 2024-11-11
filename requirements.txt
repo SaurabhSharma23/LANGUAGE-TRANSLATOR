@@ -1,0 +1,5 @@
+google-generativeai
+streamlit
+SpeechRecognition
+gTTS
+python-dotenv
