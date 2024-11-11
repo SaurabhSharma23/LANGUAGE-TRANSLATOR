@@ -1,5 +1,6 @@
 google-generativeai
 streamlit
-SpeechRecognition
+openai-whisper
+tempfile
 gTTS
 python-dotenv
