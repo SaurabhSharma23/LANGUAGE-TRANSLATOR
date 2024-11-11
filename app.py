@@ -74,6 +74,14 @@ def get_audio_input():
         st.error("Could not request results from Google Speech Recognition service; {0}".format(e))
         return None
 
+
+def generate_speech(text, language_code):
+    tts = gTTS(text, lang=language_code)
+    tts.save("translated_audio.mp3")
+    with open("translated_audio.mp3", "rb") as audio_file:
+        st.audio(audio_file, format="audio/mp3")
+
+
 def main():
     st.title("LANGUAGE TRANSLATOR")
     input_option = st.radio("Input Method", ("Text Input", "Microphone Input"))
