@@ -1,7 +1,8 @@
 import os
 import google.generativeai as genai
 import dotenv
-import speech_recognition as sr
+import whisper
+import tempfile
 import streamlit as st
 from gtts import gTTS
 
@@ -59,20 +60,17 @@ def translate_text(text, source_language, target_language):
         return None
 
 def get_audio_input():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
+    model = whisper.load_model("base")  # You can change the model size as needed (e.g., "small", "medium", "large")
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        tmp_file_path = tmp_file.name
         st.write("Speak your text...")
-        audio = recognizer.listen(source)
-    try:
-        text = recognizer.recognize_google(audio)
+        audio = st.audio("", format="audio/wav")
+        with open(tmp_file_path, "wb") as f:
+            f.write(audio)
+        result = model.transcribe(tmp_file_path)
+        text = result['text']
         st.write("You said: " + text)
         return text
-    except sr.UnknownValueError:
-        st.error("Could not understand audio")
-        return None
-    except sr.RequestError as e:
-        st.error("Could not request results from Google Speech Recognition service; {0}".format(e))
-        return None
 
 
 def generate_speech(text, language_code):
