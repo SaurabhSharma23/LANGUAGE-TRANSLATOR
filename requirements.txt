@@ -1,6 +1,5 @@
 google-generativeai
 streamlit
 openai-whisper
-tempfile
 gTTS
 python-dotenv
