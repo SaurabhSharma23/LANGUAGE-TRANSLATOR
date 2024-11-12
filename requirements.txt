@@ -3,4 +3,3 @@ streamlit
 openai-whisper
 gTTS
 python-dotenv
-streamlit-webrtc
