@@ -5,7 +5,6 @@ import streamlit as st
 from gtts import gTTS
 import whisper
 import tempfile
-from streamlit_webrtc import webrtc_streamer, AudioProcessorFactory
 
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -50,35 +49,6 @@ language_codes = {
     "Urdu": "ur"
 }
 
-def get_audio_input():
-    def audio_processor(frames):
-        # Process audio frames here (optional)
-        return frames
-  
-    webrtc_ctx = webrtc_streamer(key="audio_input",
-                                 rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
-    
-
-    st.write("Speak your text...")
-
-    audio_result = webrtc_ctx.audio_receiver
-    if audio_result:
-      
-        audio_frames = audio_result.audio.get_bytes_frame().to_bytes()
-        audio_processor_factory = AudioProcessorFactory(audio_processor,frames=audio_frames)
-
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file_path = tmp_file.name
-            with open(tmp_file_path, "wb") as f:
-                f.write(audio_bytes)
-            result = whisper.transcribe(tmp_file_path)
-            text = result['text']
-            st.write("You said: " + text)
-            return text
-    else:
-        st.error("No audio input received. Please try again.")
-        return None
-    
 
 def translate_text(text, source_language, target_language):
     prompt = f"Translate the following text from {source_language} to {target_language}:\"{text}\""
@@ -106,7 +76,22 @@ def main():
         source_text = st.text_input("Enter text to translate:")
 
     else:
-        source_text = get_audio_input()
+        audio_bytes = st.audio_input("Speak your text...")
+        if audio_bytes:
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                tmp_file_path = tmp_file.name
+                with open(tmp_file_path, "wb") as f:
+                    f.write(audio_bytes.read())
+            tmp_file.close()
+            with open(tmp_file_path, "rb") as f:
+                audio_data = f.read()
+            result = whisper.transcribe(audio_data)
+            source_text = result['text']
+            st.write("You said: " + source_text)
+        else:
+            st.error("No audio input received. Please try again.")
+            return
+        
 
     source_lang = st.selectbox("Source Language", ["Hindi","English","Gujarati","Marathi","Japanese","Korean","Urdu","Arabic","Bengali","Chinese","Dutch","French","Filipino","German","Italian","Kannada","Malayalam","Portuguese","Russian","Spanish","Swedish","Tamil","Telugu","Thai"])
     target_lang = st.selectbox("Target Language", ["Hindi","English","Gujarati","Marathi","Japanese","Korean","Urdu","Arabic","Bengali","Chinese","Dutch","French","Filipino","German","Italian","Kannada","Malayalam","Portuguese","Russian","Spanish","Swedish","Tamil","Telugu","Thai"])
