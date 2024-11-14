@@ -20,7 +20,7 @@ model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
 )
-
+whisper_model = whisper.load_model("base")
 # Language code table
 language_codes = {
     "English": "en",
@@ -78,15 +78,13 @@ def main():
     else:
         audio_bytes = st.audio_input("Speak your text...")
         if audio_bytes:
-            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                tmp_file_path = tmp_file.name
-                with open(tmp_file_path, "wb") as f:
-                    f.write(audio_bytes.read())
-            tmp_file.close()
-            with open(tmp_file_path, "rb") as f:
-                audio_data = f.read()
-            result = whisper.transcribe(audio_data)
-            source_text = result['text']
+
+            import numpy as np
+            audio_data = np.frombuffer(audio_bytes.read(), dtype=np.float32)
+            print(f"Audio data shape: {audio_data.shape}") 
+            result = whisper_model.transcribe(audio_data)
+            source_text = result["text"]
+
             st.write("You said: " + source_text)
         else:
             st.error("No audio input received. Please try again.")
