@@ -1,10 +1,10 @@
 import os
 import google.generativeai as genai
 import dotenv
+from streamlit_mic_recorder import speech_to_text
 import streamlit as st
 from gtts import gTTS
-import whisper
-import tempfile
+from transformers import pipeline
 
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -20,7 +20,7 @@ model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config=generation_config,
 )
-whisper_model = whisper.load_model("base")
+
 # Language code table
 language_codes = {
     "English": "en",
@@ -58,40 +58,39 @@ def translate_text(text, source_language, target_language):
     except Exception as e:
         st.error(f"Translation failed: {e}")
         return None
+    
+nlp = pipeline("text2text-generation", model="t5-base")
 
-
-
-
-def generate_speech(text, language_code):
-    tts = gTTS(text, lang=language_code)
-    tts.save("translated_audio.mp3")
-    with open("translated_audio.mp3", "rb") as audio_file:
-        st.audio(audio_file, format="audio/mp3")
-
+def get_audio_input(source_lang):
+  text = speech_to_text(language= source_lang, start_prompt="Start recording", stop_prompt="Stop recording")
+  if text is not None:
+    cleaned_text = text.strip().lower().replace(".", "").replace(",", "").replace("?", "")
+    improved_text = nlp(cleaned_text)[0]['generated_text']
+    st.write(f"YOU: {improved_text}")
+    return text
+  else:
+    return None
+   
 def main():
     st.title("LANGUAGE TRANSLATOR")
     input_option = st.radio("Input Method", ("Text Input", "Microphone Input"))
 
     if input_option == "Text Input":
         source_text = st.text_input("Enter text to translate:")
+        source_lang = st.selectbox("Source Language",
+                                   ["Hindi", "English", "Gujarati", "Marathi", "Japanese", "Korean", "Urdu", "Arabic",
+                                    "Bengali", "Chinese", "Dutch", "French", "Filipino", "German", "Italian", "Kannada",
+                                    "Malayalam", "Portuguese", "Russian", "Spanish", "Swedish", "Tamil", "Telugu",
+                                    "Thai"])
 
     else:
-        audio_bytes = st.audio_input("Speak your text...")
-        if audio_bytes:
+        source_lang = st.selectbox("Source Language",
+                                   ["Hindi", "English", "Gujarati", "Marathi", "Japanese", "Korean", "Urdu", "Arabic",
+                                    "Bengali", "Chinese", "Dutch", "French", "Filipino", "German", "Italian", "Kannada",
+                                    "Malayalam", "Portuguese", "Russian", "Spanish", "Swedish", "Tamil", "Telugu",
+                                    "Thai"])
+        source_text = get_audio_input(source_lang)
 
-            import numpy as np
-            audio_data = np.frombuffer(audio_bytes.read(), dtype=np.float32)
-            print(f"Audio data shape: {audio_data.shape}") 
-            result = whisper_model.transcribe(audio_data)
-            source_text = result["text"]
-
-            st.write("You said: " + source_text)
-        else:
-            st.error("No audio input received. Please try again.")
-            return
-        
-
-    source_lang = st.selectbox("Source Language", ["Hindi","English","Gujarati","Marathi","Japanese","Korean","Urdu","Arabic","Bengali","Chinese","Dutch","French","Filipino","German","Italian","Kannada","Malayalam","Portuguese","Russian","Spanish","Swedish","Tamil","Telugu","Thai"])
     target_lang = st.selectbox("Target Language", ["Hindi","English","Gujarati","Marathi","Japanese","Korean","Urdu","Arabic","Bengali","Chinese","Dutch","French","Filipino","German","Italian","Kannada","Malayalam","Portuguese","Russian","Spanish","Swedish","Tamil","Telugu","Thai"])
 
     if st.button("Translate"):
