@@ -4,3 +4,4 @@ streamlit_mic_recorder
 gTTS
 python-dotenv
 transformers
+torch
