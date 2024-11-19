@@ -1,5 +1,5 @@
 google-generativeai
 streamlit
-openai-whisper
+streamlit_mic_recorder
 gTTS
 python-dotenv
