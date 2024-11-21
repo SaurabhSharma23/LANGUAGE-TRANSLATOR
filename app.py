@@ -4,7 +4,7 @@ import dotenv
 from streamlit_mic_recorder import speech_to_text
 import streamlit as st
 from gtts import gTTS
-from transformers import pipeline
+#from transformers import pipeline
 
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -59,13 +59,13 @@ def translate_text(text, source_language, target_language):
         st.error(f"Translation failed: {e}")
         return None
     
-nlp = pipeline("text2text-generation", model="t5-base")
+#nlp = pipeline("text2text-generation", model="t5-base")
 
 def get_audio_input(source_lang):
   text = speech_to_text(language= source_lang, start_prompt="Start recording", stop_prompt="Stop recording")
   if text is not None:
-    improved_text = nlp(text)[0]['generated_text']
-    st.write(f"YOU: {improved_text}")
+    #improved_text = nlp(text)[0]['generated_text']
+    st.write(f"YOU: {text}")
     return text
   else:
     return None
