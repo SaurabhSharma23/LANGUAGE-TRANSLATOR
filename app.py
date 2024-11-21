@@ -64,7 +64,7 @@ nlp = pipeline("text2text-generation", model="t5-base")
 def get_audio_input(source_lang):
   text = speech_to_text(language= source_lang, start_prompt="Start recording", stop_prompt="Stop recording")
   if text is not None:
-    improved_text = nlp(cleaned_text)[0]['generated_text']
+    improved_text = nlp(text)[0]['generated_text']
     st.write(f"YOU: {improved_text}")
     return text
   else:
